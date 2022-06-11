@@ -56,7 +56,7 @@ def photos_to_InputMediaPhotos(update, context, photos):
 		distance_between_points = int(distance.geodesic((COORDS[update.effective_message.chat_id][0], COORDS[update.effective_message.chat_id][1]), (photo['geo'][0], photo['geo'][1])).km)
 
 		if distance_between_points > 2:
-			caption += "\n\nрасстояние от фото до вашей точки: {distance_between_points} км."
+			caption += f"\n\nрасстояние от фото до вашей точки: {distance_between_points} км."
 		
 		media.append(InputMediaPhoto(media=photo_url, caption=caption))
 
