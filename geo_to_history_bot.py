@@ -105,7 +105,7 @@ def send_photos(update, context, photos):
 							)
 
 def start(update, context):
-	text = '<a href="https://raw.githubusercontent.com/AndrewPythonist/geo_to_history_bot/main/images/start_image.jpg">&#8205;</a><b>Привет!</b> Отправь мне свою геолокацию и я покажу как это место выглядело в прошлом.\n\nкак это сделать?\n\nсперва не забудь включить GPS на телефоне.\n\n<b>1-ый способ</b>: нажать на значек скрепки и выбрать Геопозицию (<i>как на фото</i>)\n<b>2-ой способ</b>: нажать на кнопочку "Отправить геолокацию" ниже👇'
+	text = '<a href="https://raw.githubusercontent.com/AndrewPythonist/geo_to_history_bot/main/images/start_image.jpg">&#8205;</a><b>Привет!</b> Отправь мне свою геолокацию и я покажу как это место выглядело в прошлом.\n\nкак это сделать?\n\nсперва не забудь включить GPS на телефоне,\n\n<b>1-ый способ</b>: нажать на значек скрепки и выбрать Геопозицию (<i>как на фото</i>)\n<b>2-ой способ</b>: нажать на кнопку <b>"Отправить геолокацию"</b> ниже👇'
 	chat_id = update.effective_message.chat_id
 # 
 	context.bot.send_message(
@@ -190,16 +190,16 @@ def test_message(update, context):
 def main():
 	print("Бот запущен. Нажмите ctrl + C чтобы его выключить")
 
-	updater = Updater(token=TOKEN_TEST, use_context=True)
+	updater = Updater(token=TOKEN, use_context=True)
 
 	start_handler = CommandHandler('start', start)
-	test_handler = CommandHandler('test', test_message)
+	# test_handler = CommandHandler('test', test_message)
 	message_handler = MessageHandler(Filters.text, any_message)
 	location_handler = MessageHandler(Filters.location, get_location)
 	
 	updater.dispatcher.add_handler(start_handler)
 	updater.dispatcher.add_handler(message_handler)
-	updater.dispatcher.add_handler(test_handler)
+	# updater.dispatcher.add_handler(test_handler)
 	updater.dispatcher.add_handler(location_handler)
 	
 	updater.start_polling()
