@@ -33,7 +33,6 @@ def get_photos(latitude, longitude, distance=1000, limit=10, skip=0):
 
 	return result
 
-
 def send_photo(photo_url):
 	# функция чтобы отправить одну фотограффию, принимает на вход юрл фото
 
@@ -42,8 +41,7 @@ def send_photo(photo_url):
 						photo = photo_url
 						)
 
-
-def photos_to_InputMediaPhotos(photos):
+def photos_to_InputMediaPhotos(update, context, photos):
 	'''
 		преобразует список photos в список из объектов типа InputMediaPhoto чтобы потом передать их в send_media_group
 	'''
@@ -55,7 +53,7 @@ def photos_to_InputMediaPhotos(photos):
 
 		caption = f"{photo['year']}, {photo['title']}"
 
-		distance_between_points = int(distance.geodesic((latitude, longitude), (photo['geo'][0], photo['geo'][1])).km)
+		distance_between_points = int(distance.geodesic((COORDS[update.effective_message.chat_id][0], COORDS[update.effective_message.chat_id][1]), (photo['geo'][0], photo['geo'][1])).km)
 
 		if distance_between_points > 2:
 			caption += "\n\nрасстояние от фото до вашей точки: {distance_between_points} км."
@@ -63,7 +61,6 @@ def photos_to_InputMediaPhotos(photos):
 		media.append(InputMediaPhoto(media=photo_url, caption=caption))
 
 	return media
-
 
 def send_photos(update, context, photos):
 	'''
@@ -75,7 +72,7 @@ def send_photos(update, context, photos):
 
 	if len(photos) >= 1:
 
-		media = photos_to_InputMediaPhotos(photos)
+		media = photos_to_InputMediaPhotos(update, context, photos)
 		
 		try:
 			a = context.bot.send_media_group(
@@ -144,10 +141,12 @@ def any_message(update, context):
 
 def get_keyboard():
 
-	keyboard = [[KeyboardButton("Еще фото")]]
+	keyboard = [
+				[KeyboardButton("Отправить геолокацию", request_location=True)],
+				[KeyboardButton("Еще фото")]
+				]
 
 	return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
-
 
 def get_location(update, context):
 	'''
@@ -167,7 +166,6 @@ def get_location(update, context):
 	# print(photos, '\n\n')
 
 	send_photos(update, context, photos)
-
 
 def test_message(update, context):
 
@@ -191,7 +189,7 @@ def test_message(update, context):
 def main():
 	print("Бот запущен. Нажмите ctrl + C чтобы его выключить")
 
-	updater = Updater(token=TOKEN_TEST, use_context=True)
+	updater = Updater(token=TOKEN, use_context=True)
 
 	start_handler = CommandHandler('start', start)
 	test_handler = CommandHandler('test', test_message)
