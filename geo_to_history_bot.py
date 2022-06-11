@@ -1,5 +1,5 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from telegram import InputMediaPhoto, error, KeyboardButton, ReplyKeyboardMarkup
+from telegram import InputMediaPhoto, error, KeyboardButton, ReplyKeyboardMarkup, ParseMode
 from config import TOKEN, TOKEN_TEST
 import requests
 from time import sleep
@@ -105,12 +105,11 @@ def send_photos(update, context, photos):
 							)
 
 def start(update, context):
-	text = "Привет! Отправь мне свою геолокацию и я покажу как выглядело это место в прошлом.\n\nКак отправить геолокацию?:\nСперва не забудь включить GPS на телефоне.\n1-ый способ: нажать на кнопочку ниже👇\n2-ой способ: нажать на значек скрепки и выбрать Геопозицию (как на фото)"
+	text = '<a href="https://raw.githubusercontent.com/AndrewPythonist/geo_to_history_bot/main/images/start_image.jpg">&#8205;</a><b>Привет!</b> Отправь мне свою геолокацию и я покажу как это место выглядело в прошлом.\n\nкак это сделать?\n\nсперва не забудь включить GPS на телефоне.\n\n<b>1-ый способ</b>: нажать на значек скрепки и выбрать Геопозицию (<i>как на фото</i>)\n<b>2-ой способ</b>: нажать на кнопочку "Отправить геолокацию" ниже👇'
 	chat_id = update.effective_message.chat_id
-
+# 
 	context.bot.send_message(
 							chat_id = chat_id,
-							photo = open("C:\\Users\\aaaan\\Desktop\\geo_to_history_bot\\images\\start_image.jpg", 'rb'),
 							text = text,
 							parse_mode=ParseMode.HTML,
 							reply_markup = get_keyboard()
