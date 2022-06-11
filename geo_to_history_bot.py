@@ -7,7 +7,13 @@ from geopy import distance
 import random
 
 
-def get_photos(latitude, longitude, distance=1000, limit=10):
+global COORDS, SKIP
+
+COORDS = {}
+SKIP = {}
+
+
+def get_photos(latitude, longitude, distance=1000, limit=10, skip=0):
 	'''
 		посылаем запрос на pastvu api, с параметрами широты, долготы, максимальным расстроянием от точки и количество фотографий
 
@@ -21,7 +27,7 @@ def get_photos(latitude, longitude, distance=1000, limit=10):
 		 'year': 1934}
 	'''
 
-	url = f'https://pastvu.com/api2?method=photo.giveNearestPhotos&params={{"geo":{[latitude, longitude]},"distance":{distance},"limit":{limit}}}'
+	url = f'https://pastvu.com/api2?method=photo.giveNearestPhotos&params={{"geo":{[latitude, longitude]},"distance":{distance},"limit":{limit}, "skip":{skip}}}'
 	req = requests.get(url)
 
 	result = req.json()['result']['photos']
@@ -102,22 +108,40 @@ def start(update, context):
 	text = "­Отправьте мне свою геолокацию и я вам покажу как выглядело это место в прошлом."
 	chat_id = update.effective_message.chat_id
 
+	context.bot.send_message(
+							chat_id = chat_id,
+							text = text,
+							reply_markup = get_keyboard()
+							)
+
 def any_message(update, context):
 	'''
 		обработчик команды /start и любого текстового сообщения
 	'''
 
-	text = "Отправьте мне свою геолокацию и я вам покажу как выглядело это место в прошлом."
 	chat_id = update.effective_message.chat_id
 
-	context.bot.send_message(
-							chat_id = chat_id,
-							text = text
-							)
+	if update.effective_message.text == "Еще фото":
+
+		if chat_id in COORDS.keys():
+			SKIP[chat_id] += 10
+
+			photos = get_photos(COORDS[chat_id][0], COORDS[chat_id][1], distance=1000000, limit=10, skip = SKIP[chat_id])
+			send_photos(update, context, photos)
+		else:
+			context.bot.send_message(
+								chat_id = chat_id,
+								text = "Для начала отправь свою геопозицию:)"
+								)
+	else:
+		context.bot.send_message(
+								chat_id = chat_id,
+								text = "Отправь мне свою геолокацию и я покажу как выглядело это место в прошлом."
+								)
 
 def get_keyboard():
 
-	keyboard = [[KeyboardButton("Еще")]]
+	keyboard = [[KeyboardButton("Еще фото")]]
 
 	return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
@@ -133,10 +157,13 @@ def get_location(update, context):
 	latitude = update.message.location.latitude # широта
 	longitude = update.message.location.longitude # долгота
 
-	photos = get_photos(latitude, longitude, distance=1000000, limit=100)
+	COORDS[chat_id] = [latitude, longitude]
+	SKIP[chat_id] = 0
+
+	photos = get_photos(latitude, longitude, distance=1000000, limit=10, skip = SKIP[chat_id])
 	# print(photos, '\n\n')
 
-	send_photos(update, context, photos[:10])
+	send_photos(update, context, photos)
 
 
 def test_message(update, context):
@@ -165,11 +192,11 @@ def main():
 
 	start_handler = CommandHandler('start', start)
 	test_handler = CommandHandler('test', test_message)
-	# message_handler = MessageHandler(Filters.text, any_message)
+	message_handler = MessageHandler(Filters.text, any_message)
 	location_handler = MessageHandler(Filters.location, get_location)
 
 	updater.dispatcher.add_handler(start_handler)
-	# updater.dispatcher.add_handler(message_handler)
+	updater.dispatcher.add_handler(message_handler)
 	updater.dispatcher.add_handler(test_handler)
 	updater.dispatcher.add_handler(location_handler)
 
