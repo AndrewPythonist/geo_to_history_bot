@@ -8,14 +8,13 @@ import random
 
 
 global COORDS, SKIP
-
-COORDS = {}
-SKIP = {}
+COORDS = {} # словарь с последними координатами которые отправили пользователи
+SKIP = {} #  сколько фото пропускать от текущей точки для поиска в запросе
 
 
 def get_photos(latitude, longitude, distance=1000, limit=10, skip=0):
 	'''
-		посылаем запрос на pastvu api, с параметрами широты, долготы, максимальным расстроянием от точки и количество фотографий
+		посылаем запрос на pastvu api, с параметрами широты, долготы, максимальным расстроянием от точки, количество фотографий и сколько фото пропускать от точки
 
 		возвращает список со словарями о фото, пример:
 		{'cid': 449459,
@@ -54,8 +53,12 @@ def photos_to_InputMediaPhotos(photos):
 	for photo in photos:
 		photo_url = f"https://pastvu.com/_p/d/{photo['file']}"
 
-		# distance_from_point = "\n\nрасстояние места фото от вашей точки: {int(distance.geodesic((latitude, longitude), (photo['geo'][0], photo['geo'][1])).m)} м."
 		caption = f"{photo['year']}, {photo['title']}"
+
+		distance_between_points = int(distance.geodesic((latitude, longitude), (photo['geo'][0], photo['geo'][1])).km)
+
+		if distance_between_points > 2:
+			caption += "\n\nрасстояние от фото до вашей точки: {distance_between_points} км."
 		
 		media.append(InputMediaPhoto(media=photo_url, caption=caption))
 
