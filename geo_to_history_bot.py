@@ -105,12 +105,14 @@ def send_photos(update, context, photos):
 							)
 
 def start(update, context):
-	text = "­Отправьте мне свою геолокацию и я вам покажу как выглядело это место в прошлом."
+	text = "Привет! Отправь мне свою геолокацию и я покажу как выглядело это место в прошлом.\n\nКак отправить геолокацию?:\nСперва не забудь включить GPS на телефоне.\n1-ый способ: нажать на кнопочку ниже👇\n2-ой способ: нажать на значек скрепки и выбрать Геопозицию (как на фото)"
 	chat_id = update.effective_message.chat_id
 
 	context.bot.send_message(
 							chat_id = chat_id,
+							photo = open("C:\\Users\\aaaan\\Desktop\\geo_to_history_bot\\images\\start_image.jpg", 'rb'),
 							text = text,
+							parse_mode=ParseMode.HTML,
 							reply_markup = get_keyboard()
 							)
 
@@ -189,18 +191,18 @@ def test_message(update, context):
 def main():
 	print("Бот запущен. Нажмите ctrl + C чтобы его выключить")
 
-	updater = Updater(token=TOKEN, use_context=True)
+	updater = Updater(token=TOKEN_TEST, use_context=True)
 
 	start_handler = CommandHandler('start', start)
 	test_handler = CommandHandler('test', test_message)
 	message_handler = MessageHandler(Filters.text, any_message)
 	location_handler = MessageHandler(Filters.location, get_location)
-
+	
 	updater.dispatcher.add_handler(start_handler)
 	updater.dispatcher.add_handler(message_handler)
 	updater.dispatcher.add_handler(test_handler)
 	updater.dispatcher.add_handler(location_handler)
-
+	
 	updater.start_polling()
 	updater.idle()
 
