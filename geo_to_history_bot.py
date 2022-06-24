@@ -1,5 +1,6 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import InputMediaPhoto, error, KeyboardButton, ReplyKeyboardMarkup, ParseMode
+from databases import init_db, add_geo
 from config import TOKEN, TOKEN_TEST
 import requests
 from time import sleep
@@ -152,10 +153,42 @@ def get_keyboard():
 def get_location(update, context):
 	'''
 		функция-обработчик, когда пользователь отсылает геолокацию
+
+		формат update.effective_message которое мы получаем
+
+			{
+	    "location": {"latitude": 59.959934, "longitude": 30.284054},
+	    "entities": [],
+	    "photo": [],
+	    "date": 1656062525,
+	    "supergroup_chat_created": False,
+	    "chat": {
+	        "id": 313313230,
+	        "username": "LLLLa1t",
+	        "type": "private",
+	        "first_name": "Andrew",
+	        "last_name": "Morton",
+	    },
+	    "delete_chat_photo": False,
+	    "group_chat_created": False,
+	    "new_chat_photo": [],
+	    "channel_chat_created": False,
+	    "new_chat_members": [],
+	    "caption_entities": [],
+	    "message_id": 1942,
+	    "from": {
+	        "id": 313313230,
+	        "is_bot": False,
+	        "first_name": "Andrew",
+	        "language_code": "ru",
+	        "last_name": "Morton",
+	        "username": "LLLLa1t",
+	    },
+	}
 	'''
 
 	chat_id = update.effective_message.chat_id
-	# print('\n\n', update)
+	# print('\n\n', update.effective_message)
 
 	latitude = update.message.location.latitude # широта
 	longitude = update.message.location.longitude # долгота
@@ -163,11 +196,21 @@ def get_location(update, context):
 	COORDS[chat_id] = [latitude, longitude]
 	SKIP[chat_id] = 0
 
+	# добавляем запись в базу данных
+	add_geo(
+			user_id = chat_id,
+			username = update.message.chat.username,
+			latitude = latitude,
+			longitude = longitude,
+			date = update.message.date
+		)
+
 	photos = get_photos(latitude, longitude, distance=1000000, limit=10, skip = SKIP[chat_id])
 	# print(photos, '\n\n')
 
 	send_photos(update, context, photos)
 
+'''
 def test_message(update, context):
 
 	for _ in range(10):
@@ -185,12 +228,16 @@ def test_message(update, context):
 		send_photos(update, context, photos)
 
 		sleep(1)
+'''
 
 
 def main():
 	print("Бот запущен. Нажмите ctrl + C чтобы его выключить")
 
 	updater = Updater(token=TOKEN, use_context=True)
+
+	# Подключиться к СУБД
+	init_db()
 
 	start_handler = CommandHandler('start', start)
 	# test_handler = CommandHandler('test', test_message)
